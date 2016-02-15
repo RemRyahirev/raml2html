@@ -1,8 +1,13 @@
 {{#if this.properties}}
     {{#if (isNotEq @key 'application/json')}}
-        {{@key}}:&nbsp;
+        {{~#if this.isOptional~}}
+            {{@key}}
+        {{~else~}}
+            {{@key}}<span class="required">*</span>
+        {{~/if~}}
+        :&nbsp;
     {{/if}}
-    &lt;<strong>{{returnOr this.displayName this.parentType}}</strong>&gt;
+    {{#if isArray}}Array of {{/if}}&lt;<strong>{{returnOr this.displayName this.parentType}}</strong>&gt;
 
     <ul>
         {{#each this.properties}}
@@ -11,8 +16,14 @@
     </ul>
 {{else}}
     {{#if this.type}}
-        {{@key}}:
+        {{~#if this.isOptional~}}
+            {{@key}}
+        {{~else~}}
+            {{@key}}<span class="required">*</span>
+        {{~/if~}}
+        :
 
+        {{#if isArray}}Array of {{/if}}
         <em>
             {{~#if this.required}}required {{/if~}}
 
@@ -54,8 +65,13 @@
             {{/if}}
         {{/if}}
     {{else}}
-        {{@key}}:
+        {{~#if this.isOptional~}}
+            {{@key}}
+        {{~else~}}
+            {{@key}}<span class="required">*</span>
+        {{~/if~}}
+        :
 
-        <em>({{this}})</em>
+        {{#if isArray}}Array of {{/if}}<em>({{this}})</em>
     {{/if}}
 {{/if}}

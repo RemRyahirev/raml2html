@@ -150,18 +150,31 @@ function getDefaultConfig(mainTemplate, templatesPath) {
             ramlObj = processObj(ramlObj);
 
             let processType = type => {
+                //console.log('pr t:', type);
+
                 let isObject = typeof type === 'object',
                     typeName = isObject ? type.type || type.parentType : type,
-                    t        = typeName ? typeName.replace(/^(\w+)\b(\[\])?$/, '$1') : '',
+                    t        = typeName ? typeName.replace(/^([.\w]+)\b(\[\])?$/, '$1') : '',
                     isArray  = typeName && typeName.substr(-2, 2) === '[]',
-                    exists   = t && ramlObj.types.hasOwnProperty(t);
+                    exists   = t && ramlObj.types.hasOwnProperty(t),
+                    uses     = false;
+
+                if (t.indexOf('.') >= 0) {
+                    uses = t.split('.').shift();
+                    t = t.split('.').pop();
+
+                    exists = !!(uses && ramlObj.uses && ramlObj.uses[uses] && ramlObj.uses[uses].types && ramlObj.uses[uses].types[t]);
+                }
 
                 let typ;
                 if (exists) {
-                    typ = JSON.parse(JSON.stringify(ramlObj.types[t]));
+                    if (!uses) {
+                        typ = JSON.parse(JSON.stringify(ramlObj.types[t]));
+                    } else {
+                        typ = JSON.parse(JSON.stringify(ramlObj.uses[uses].types[t]));
+                    }
                 } else {
                     typ = JSON.parse(JSON.stringify(type));
-
                 }
 
                 if (typeof typ != 'object') {
@@ -173,7 +186,7 @@ function getDefaultConfig(mainTemplate, templatesPath) {
                     typ.isArray = isArray;
 
                     // properties of parent type
-                    if (typ.type && ramlObj.types.hasOwnProperty(typ.type)) {
+                    if (typ.type) {
                         let extend = processType(typ.type);
 
                         if (extend.hasOwnProperty('properties')) {
@@ -224,6 +237,8 @@ function getDefaultConfig(mainTemplate, templatesPath) {
                     return rtPart;
                 }
 
+                let availablePatternKeys = ['example', 'description'];
+
                 let keys = Object.keys(rtPart);
                 for (var i = 0; i < keys.length; i++) {
                     var key = keys[i];
@@ -232,12 +247,12 @@ function getDefaultConfig(mainTemplate, templatesPath) {
                         continue;
                     }
 
-                    if (key === 'example') {
+                    if (availablePatternKeys.indexOf(key) >= 0) {
                         let patternKeys = Object.keys(pattern);
                         for (let j = 0; j < patternKeys.length; j++) {
                             let patternKey = patternKeys[j];
 
-                            rtPart.example = rtPart.example.replace(new RegExp(`<<${patternKey}>>`, 'g'), pattern[patternKey]);
+                            rtPart[key] = rtPart[key].replace(new RegExp(`<<${patternKey}>>`, 'g'), pattern[patternKey]);
                         }
                     } else if (typeof rtPart[key] === 'object') {
                         rtPart[key] = processResourceTypePattern(rtPart[key], pattern);
@@ -250,6 +265,7 @@ function getDefaultConfig(mainTemplate, templatesPath) {
                 let to = JSON.parse(JSON.stringify(toRaw)),
                     from = JSON.parse(JSON.stringify(fromRaw)),
                     fromKeys = Object.keys(from);
+
                 for (let i = 0; i < fromKeys.length; i++) {
                     let fromKey = fromKeys[i];
 
@@ -336,7 +352,7 @@ function getDefaultConfig(mainTemplate, templatesPath) {
                             let traitName = method.is[j];
 
                             if (ramlObj.traits && ramlObj.traits[traitName]) {
-                                methods[methodName] = deepMerge(method, ramlObj.traits[traitName]);
+                                methods[methodName] = deepMerge(methods[methodName], ramlObj.traits[traitName]);
                             }
                         }
                     }

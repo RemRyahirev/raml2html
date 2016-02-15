@@ -142,20 +142,11 @@
                                                     </ul>
                                                 {{/if}}
 
-                                                {{#if type}}
-                                                    {{#with (getType type)}}
+                                                {{#with (getType type)}}
+                                                    {{#if this}}
                                                         {{> type}}
-                                                    {{/with}}
-                                                {{/if}}
-
-                                                {{#if properties}}
-                                                    <strong>Parameters</strong>
-                                                    <ul>
-                                                        {{#each properties}}
-                                                            {{> item}}
-                                                        {{/each}}
-                                                    </ul>
-                                                {{/if}}
+                                                    {{/if}}
+                                                {{/with}}
 
                                                 {{#if schema}}
                                                     <p><strong>Schema</strong>:</p>
@@ -195,17 +186,11 @@
                                                 {{#each body}}
                                                     <p><strong>Type: {{@key}}</strong></p>
 
-                                                    {{#if type}}
-                                                        {{#with (getType type)}}
+                                                    {{#with (getType this)}}
+                                                        {{#if this}}
                                                             {{> type}}
-                                                        {{/with}}
-                                                    {{/if}}
-
-                                                    {{#if properties}}
-                                                        {{#with (getType this)}}
-                                                            {{> type}}
-                                                        {{/with}}
-                                                    {{/if}}
+                                                        {{/if}}
+                                                    {{/with}}
 
                                                     {{#if schema}}
                                                         <p><strong>Schema</strong>:</p>
