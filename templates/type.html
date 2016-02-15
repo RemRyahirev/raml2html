@@ -1,0 +1,61 @@
+{{#if this.properties}}
+    {{#if (isNotEq @key 'application/json')}}
+        {{@key}}:&nbsp;
+    {{/if}}
+    &lt;<strong>{{returnOr this.displayName this.parentType}}</strong>&gt;
+
+    <ul>
+        {{#each this.properties}}
+            <li>{{> type}}</li>
+        {{/each}}
+    </ul>
+{{else}}
+    {{#if this.type}}
+        {{@key}}:
+
+        <em>
+            {{~#if this.required}}required {{/if~}}
+
+            (
+            {{~#if this.enum~}}
+                one of {{join this.enum~}}
+            {{~else~}}
+                {{~this.type~}}
+            {{/if~}}
+            )
+
+            {{~#if this.default}} - default: {{this.default}}{{/if~}}
+            {{~#if this.repeat}} - repeat: {{this.repeat}}{{/if~}}
+
+            {{~#if (isEq this.type 'string')}}
+                {{~#if this.minLength}} - minLength: {{this.minLength}}{{/if~}}
+                {{~#if this.maxLength}} - maxLength: {{this.maxLength}}{{/if~}}
+            {{~else~}}
+                {{~#if this.minimum}} - minimum: {{this.minimum}}{{/if~}}
+                {{~#if this.maximum}} - maximum: {{this.maximum}}{{/if~}}
+            {{/if~}}
+
+            {{~#if this.pattern}} - pattern: {{this.pattern}}{{/if~}}
+        </em>
+
+        {{markdown this.description}}
+
+        {{#if this.schema}}
+            <p><strong>Schema</strong>:</p>
+            <pre><code>{{this.schema}}</code></pre>
+        {{/if}}
+
+        {{#if this.example}}
+            <p><strong>Example</strong>:</p>
+            {{#if (isEq this.type 'string')}}
+                <pre>{{this.example}}</pre>
+            {{else}}
+                <pre><code>{{this.example}}</code></pre>
+            {{/if}}
+        {{/if}}
+    {{else}}
+        {{@key}}:
+
+        <em>({{this}})</em>
+    {{/if}}
+{{/if}}

@@ -2,41 +2,47 @@
 
 'use strict';
 
-var program = require('commander');
-var fs = require('fs');
-var raml2html = require('..');
-var pjson = require('../package.json');
+var program = require('commander'),
+    fs = require('fs'),
+    raml2html = require('..'),
+    pjson = require('../package.json');
 
 program
-  .version(pjson.version)
-  .usage('[options] [RAML input file]')
-  .option('-i, --input [input]', 'RAML input file')
-  .option('-t, --template [template]', 'Filename of the custom Nunjucks template')
-  .option('-o, --output [output]', 'HTML output file')
-  .parse(process.argv);
+    .version(pjson.version)
+    .usage('[options] [RAML input file] [HTML output file]')
+    .option('-i, --input [input]', 'RAML input file')
+    .option('-o, --output [output]', 'HTML output file')
+    .parse(process.argv);
 
 var input = program.input;
 
 if (!input) {
-  if (program.args.length !== 1) {
-    console.error('Error: You need to specify the RAML input file');
-    program.help();
-    process.exit(1);
-  }
+    if (program.args.length < 1) {
+        console.error('Error: You need to specify the RAML input file');
+        program.help();
+        process.exit(1);
+    }
 
-  input = program.args[0];
+    input = program.args[0];
+
+    if (program.args.length >= 2) {
+        program.output = program.args[1];
+    }
 }
 
 // Start the rendering process
-raml2html.render(input, raml2html.getDefaultConfig(program.template)).then(function(result) {
-  if (program.output) {
-    fs.writeFileSync(program.output, result);
-  } else {
-    // Simply output to console
-    process.stdout.write(result);
-    process.exit(0);
-  }
-}).catch(function(error) {
-  console.error(new Error(error));
-  process.exit(1);
-});
+raml2html.render(input, raml2html.getDefaultConfig())
+    .then(function (result) {
+        if (program.output) {
+            fs.writeFileSync(program.output, result, {encoding: 'utf8'});
+        } else {
+            // Simply output to console
+            process.stdout.write(result);
+            process.exit(0);
+        }
+    })
+    .catch(function (error) {
+        console.error(error);
+        console.error(error.stack);
+        process.exit(1);
+    });

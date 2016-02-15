@@ -1,0 +1,48 @@
+<li>
+    {{#if displayName}}
+        {{displayName}}:
+    {{else}}
+        {{@key}}:
+    {{/if}}
+
+    <em>
+        {{~#if required}}required {{/if~}}
+
+        (
+        {{~#if (isObject this)}}
+            {{~#if enum}}one of {{join enum}}{{~else~}}{{type}}{{/if~}}
+        {{~else~}}
+            {{~this~}}
+        {{/if~}}
+        )
+
+        {{~#if default}} - default: {{default}}{{/if~}}
+        {{~#if repeat}} - repeat: {{repeat}}{{/if~}}
+
+        {{~#if (typeString)}}
+            {{~#if minLength}} - minLength: {{minLength}}{{/if~}}
+            {{~#if maxLength}} - maxLength: {{maxLength}}{{/if~}}
+        {{~else~}}
+            {{~#if minimum}} - minimum: {{minimum}}{{/if~}}
+            {{~#if maximum}} - maximum: {{maximum}}{{/if~}}
+        {{/if~}}
+
+        {{~#if pattern}} - pattern: {{pattern}}{{/if~}}
+    </em>
+
+    {{markdown description}}
+
+    {{#if schema}}
+        <p><strong>Schema</strong>:</p>
+        <pre><code>{{schema}}</code></pre>
+    {{/if}}
+
+    {{#if example}}
+        <p><strong>Example</strong>:</p>
+        {{#if (typeString)}}
+            <pre>{{example}}</pre>
+        {{else}}
+            <pre><code>{{example}}</code></pre>
+        {{/if}}
+    {{/if}}
+</li>

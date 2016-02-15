@@ -1,0 +1,214 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+    <title>{{title}} API documentation</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta charset="UTF-8">
+
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/prism.css">
+    <script type="text/javascript" src="/js/jquery-1.12.0.min.js"></script>
+    <script type="text/javascript" src="/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="/js/prism.js"></script>
+
+    <script type="text/javascript">
+        $(document).ready(function() {
+            Prism.plugins.NormalizeWhitespace.setDefaults({
+                'remove-trailing': false,
+                'remove-indent': true,
+                'left-trim': true,
+                'right-trim': true,
+                'indent': 0,
+                'remove-initial-line-feed': false,
+                'tabs-to-spaces': 0,
+                'spaces-to-tabs': 0
+            });
+
+            // open modal on hashes like #_action_get
+            $(window).bind('hashchange', function(e) {
+                var anchor_id = document.location.hash.substr(1); //strip #
+                var element = $('#' + anchor_id);
+
+                // do we have such element + is it a modal?  --> show it
+                if (element.length && element.hasClass('modal')) {
+                    element.modal('show');
+                }
+            });
+
+            // execute hashchange on first page load
+            $(window).trigger('hashchange');
+
+            // remove url fragment on modal hide
+            $('.modal').on('hidden.bs.modal', function() {
+                try {
+                    if (history && history.replaceState) {
+                        history.replaceState({}, '', '#');
+                    }
+                } catch(e) {}
+            });
+        });
+    </script>
+
+    <style>
+        .hljs {
+            background: transparent;
+        }
+        .parent {
+            color: #999;
+        }
+        .list-group-item > .badge {
+            float: none;
+            margin-right: 6px;
+        }
+        .panel-title > .methods {
+            float: right;
+        }
+        .badge {
+            border-radius: 0;
+            text-transform: uppercase;
+            width: 70px;
+            font-weight: normal;
+            color: #f3f3f6;
+            line-height: normal;
+        }
+        .badge_get {
+            background-color: #63a8e2;
+        }
+        .badge_post {
+            background-color: #6cbd7d;
+        }
+        .badge_put {
+            background-color: #22bac4;
+        }
+        .badge_delete {
+            background-color: #d26460;
+        }
+        .badge_patch {
+            background-color: #ccc444;
+        }
+        .list-group, .panel-group {
+            margin-bottom: 0;
+        }
+        .panel-group .panel+.panel-white {
+            margin-top: 0;
+        }
+        .panel-group .panel-white {
+            border-bottom: 1px solid #F5F5F5;
+            border-radius: 0;
+        }
+        .panel-white:last-child {
+            border-bottom-color: white;
+            -webkit-box-shadow: none;
+            box-shadow: none;
+        }
+        .panel-white .panel-heading {
+            background: white;
+        }
+        .tab-pane ul {
+            padding-left: 2em;
+        }
+        .tab-pane h2 {
+            font-size: 1.2em;
+            padding-bottom: 4px;
+            border-bottom: 1px solid #ddd;
+        }
+        .tab-pane h3 {
+            font-size: 1.1em;
+        }
+        .tab-content {
+            border-left: 1px solid #ddd;
+            border-right: 1px solid #ddd;
+            border-bottom: 1px solid #ddd;
+            padding: 10px;
+        }
+        #sidebar {
+            margin-top: 30px;
+            padding-right: 5px;
+            overflow: auto;
+            height: 90%;
+        }
+        .top-resource-description {
+            border-bottom: 1px solid #ddd;
+            background: #fcfcfc;
+            padding: 15px 15px 0 15px;
+            margin: -15px -15px 10px -15px;
+        }
+        .resource-description {
+            border-bottom: 1px solid #fcfcfc;
+            background: #fcfcfc;
+            padding: 15px 15px 0 15px;
+            margin: -15px -15px 10px -15px;
+        }
+        .resource-description p:last-child {
+            margin: 0;
+        }
+        .list-group .badge {
+            float: left;
+        }
+        .method_description {
+            margin-left: 85px;
+        }
+        .method_description p:last-child {
+            margin: 0;
+        }
+        .list-group-item {
+            cursor: pointer;
+        }
+        .list-group-item:hover {
+            background-color: #f5f5f5;
+        }
+    </style>
+</head>
+
+<body data-spy="scroll" data-target="#sidebar">
+<div class="container">
+    <div class="row">
+        <div class="col-md-9" role="main">
+            <div class="page-header">
+                <h1>{{title}} documentation{{#if version}} <small>version {{version}}</small>{{/if}}</h1>
+                <p>{{baseUri}}</p>
+
+                {{#each documentation}}
+                    <h3 id="documentation_{{@key}}">
+                        <a href="#documentation_{{@key}}">{{this.title}}</a>
+                    </h3>
+                    {{markdown this.content}}
+                {{/each}}
+            </div>
+
+            {{#each resources}}
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 id="resource_{{@key}}" class="panel-title">{{#if this.displayName}}{{this.displayName}}{{else}}{{this.relativeUri}}{{/if}}</h3>
+                    </div>
+
+                    <div class="panel-body">
+                        {{#if description}}
+                            <div class="top-resource-description">
+                                {{markdown description}}
+                            </div>
+                        {{/if}}
+
+                        <div class="panel-group">
+                            {{> resource}}
+                        </div>
+                    </div>
+                </div>
+            {{/each}}
+        </div>
+
+        <div class="col-md-3">
+            <div id="sidebar" class="hidden-print affix" role="complementary">
+                <ul class="nav nav-pills nav-stacked">
+                    {{#each resources}}
+                        <li>
+                            <a href="#resource_{{@key}}">{{#if this.displayName}}{{this.displayName}}{{else}}{{this.relativeUri}}{{/if}}</a>
+                        </li>
+                    {{/each}}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+</body></html>

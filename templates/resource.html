@@ -1,0 +1,239 @@
+{{#if (describeResource)}}
+    <div class="panel panel-white">
+        <div class="panel-heading">
+            <h4 class="panel-title">
+                <a class="collapsed" data-toggle="collapse" href="#panel_{{dot2underscore @contextPath}}">
+                    <span class="parent">{{parentUrl}}</span>{{relativeUri}}
+                </a>
+
+                <span class="methods">
+                    {{#each (getMethods this)}}
+                        <a href="#{{dot2underscore @contextPath}}"><!-- modal shown by hashchange event -->
+                            <span class="badge badge_{{@key}}">
+                                {{@key}}
+                                {{#if (returnAnd this.securedBy.length (firstElNotNull this.securedBy))}} <span class="glyphicon glyphicon-lock" title="Authentication required"></span>{{/if}}
+                            </span>
+                        </a>
+                    {{/each}}
+                </span>
+            </h4>
+        </div>
+
+        <div id="panel_{{dot2underscore @contextPath}}" class="panel-collapse collapse">
+            <div class="panel-body">
+                {{#if parentUrl}}
+                    {{#if description}}
+                        <div class="resource-description">
+                            {{markdown description}}
+                        </div>
+                    {{/if}}
+                {{/if}}
+
+                <div class="list-group">
+                    {{#each (getMethods this)}}
+                        <div onclick="window.location.href = '#{{dot2underscore @contextPath}}'" class="list-group-item">
+                            <span class="badge badge_{{@key}}">
+                                {{@key}}
+                                {{#if (returnAnd this.securedBy.length (firstElNotNull this.securedBy))}} <span class="glyphicon glyphicon-lock" title="Authentication required"></span>{{/if}}
+                            </span>
+                            <div class="method_description">
+                                {{markdown description}}
+                            </div>
+                            <div class="clearfix"></div>
+                        </div>
+                    {{/each}}
+                </div>
+            </div>
+        </div>
+
+        {{#each (getMethods this)}}
+            <div class="modal fade" tabindex="0" id="{{dot2underscore @contextPath}}">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                            <h4 class="modal-title" id="myModalLabel">
+                                <span class="badge badge_{{@key}}">
+                                    {{@key}}
+                                    {{#if (returnAnd this.securedBy.length (firstElNotNull this.securedBy))}} <span class="glyphicon glyphicon-lock" title="Authentication required"></span>{{/if}}
+                                </span>
+                                <span class="parent">{{../parentUrl}}</span>{{../relativeUri}}
+                            </h4>
+                        </div>
+
+                        <div class="modal-body">
+                            {{#if description}}
+                                <div class="alert alert-info">
+                                    {{markdown description}}
+                                </div>
+                            {{/if}}
+
+                            {{#if (returnAnd this.securedBy.length (firstElNotNull this.securedBy))}}
+                                {{#each this.securedBy}}
+                                    {{#with (getSecuritySchema this)}}
+                                        <div class="alert alert-warning">
+                                            <span class="glyphicon glyphicon-lock" title="Authentication required"></span> Secured by {{returnOr this.displayName ../this}}
+
+                                            {{#if this.description}}
+                                                {{markdown this.description}}
+                                            {{/if}}
+                                        </div>
+                                    {{/with}}
+                                {{/each}}
+                            {{/if}}
+
+                            {{#if ../uriParameters}}
+                                <h4>URI Parameters</h4>
+                                <ul>
+                                    {{#each ../uriParameters}}
+                                        {{> item}}
+                                    {{/each}}
+                                </ul>
+                                <br>
+                            {{/if}}
+
+                            <!-- Nav tabs -->
+                            <ul class="nav nav-tabs">
+                                {{#if (hasRequest)}}
+                                    <li class="active">
+                                        <a href="#{{dot2underscore @contextPath}}_request" data-toggle="tab">Request</a>
+                                    </li>
+                                {{/if}}
+
+                                {{#if responses}}
+                                    <li {{#unless (hasRequest)}}class="active"{{/unless}}>
+                                        <a href="#{{dot2underscore @contextPath}}_response" data-toggle="tab">Response</a>
+                                    </li>
+                                {{/if}}
+                            </ul>
+
+                            <!-- Tab panes -->
+                            <div class="tab-content">
+                                {{#if (hasRequest)}}
+                                    <div class="tab-pane active" id="{{dot2underscore @contextPath}}_request">
+                                        {{#if headers}}
+                                            <h3>Headers</h3>
+                                            <ul>
+                                                {{#each headers}}
+                                                    {{> item}}
+                                                {{/each}}
+                                            </ul>
+                                        {{/if}}
+
+                                        {{#if queryParameters}}
+                                            <h3>Query Parameters</h3>
+                                            <ul>
+                                                {{#each queryParameters}}
+                                                    {{> item}}
+                                                {{/each}}
+                                            </ul>
+                                        {{/if}}
+
+                                        {{#if body}}
+                                            <h3>Body</h3>
+                                            {{#each body}}
+                                                <p><strong>Type: {{@key}}</strong></p>
+                                                {{#if formParameters}}
+                                                    <strong>Form Parameters</strong>
+                                                    <ul>
+                                                        {{#each formParameters}}
+                                                            {{> item}}
+                                                        {{/each}}
+                                                    </ul>
+                                                {{/if}}
+
+                                                {{#if type}}
+                                                    {{#with (getType type)}}
+                                                        {{> type}}
+                                                    {{/with}}
+                                                {{/if}}
+
+                                                {{#if properties}}
+                                                    <strong>Parameters</strong>
+                                                    <ul>
+                                                        {{#each properties}}
+                                                            {{> item}}
+                                                        {{/each}}
+                                                    </ul>
+                                                {{/if}}
+
+                                                {{#if schema}}
+                                                    <p><strong>Schema</strong>:</p>
+                                                    <pre>
+                                                        <code class="line-numbers language-json">{{schema}}</code>
+                                                    </pre>
+                                                {{/if}}
+
+                                                {{#if example}}
+                                                    <p><strong>Example</strong>:</p>
+                                                    <pre>
+                                                        <code class="line-numbers language-json">{{example}}</code>
+                                                    </pre>
+                                                {{/if}}
+                                            {{/each}}
+                                        {{/if}}
+                                    </div>
+                                {{/if}}
+
+                                {{#if responses}}
+                                    <div class="tab-pane{{#unless (hasRequest)}} active{{/unless}}" id="{{dot2underscore @contextPath}}_response">
+                                        {{#each responses}}
+                                            <h2>HTTP status code <a href="http://httpstatus.es/{{@key}}" target="_blank">{{@key}}</a></h2>
+                                            {{markdown description}}
+
+                                            {{#if headers}}
+                                                <h3>Headers</h3>
+                                                <ul>
+                                                    {{#each headers}}
+                                                        {{>  item}}
+                                                    {{/each}}
+                                                </ul>
+                                            {{/if}}
+
+                                            {{#if body}}
+                                                <h3>Body</h3>
+                                                {{#each body}}
+                                                    <p><strong>Type: {{@key}}</strong></p>
+
+                                                    {{#if type}}
+                                                        {{#with (getType type)}}
+                                                            {{> type}}
+                                                        {{/with}}
+                                                    {{/if}}
+
+                                                    {{#if properties}}
+                                                        {{#with (getType this)}}
+                                                            {{> type}}
+                                                        {{/with}}
+                                                    {{/if}}
+
+                                                    {{#if schema}}
+                                                        <p><strong>Schema</strong>:</p>
+                                                        <pre>
+                                                            <code class="line-numbers language-json">{{schema}}</code>
+                                                        </pre>
+                                                    {{/if}}
+
+                                                    {{#if example}}
+                                                        <p><strong>Example</strong>:</p>
+                                                        <pre>
+                                                            <code class="line-numbers language-json">{{example}}</code>
+                                                        </pre>
+                                                    {{/if}}
+                                                {{/each}}
+                                            {{/if}}
+                                        {{/each}}
+                                    </div>
+                                {{/if}}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {{/each}}
+    </div>
+{{/if}}
+
+{{#each this.resources}}
+    {{> resource}}
+{{/each}}
