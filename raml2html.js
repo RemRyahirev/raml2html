@@ -6,6 +6,8 @@ import fs from 'fs';
 import path from 'path';
 import util from 'util';
 
+const AVAILABLE_METHODS = ['get', 'post', 'put', 'delete', 'patch'];
+
 /**
  * Render the source RAML object using the config's processOutput function
  *
@@ -44,8 +46,6 @@ function processObj(obj) {
     //console.dir(obj);
     //console.log(util.inspect(obj, {showHidden: false, depth: null}));
 
-    let methods = ['get', 'post', 'put', 'delete', 'patch'];
-
     let processResource = (res, url, securitySchemes, traits) => {
         let ss = JSON.parse(JSON.stringify(securitySchemes)),
             tr = JSON.parse(JSON.stringify(traits));
@@ -71,7 +71,7 @@ function processObj(obj) {
             subRes.parentUrl = url;
             subRes.relativeUri = key;
             subRes.methods = {};
-            for (let m of methods) {
+            for (let m of AVAILABLE_METHODS) {
                 if (subRes.hasOwnProperty(m)) {
                     subRes.methods[m] = subRes[m];
                     delete subRes[m];
@@ -123,7 +123,7 @@ function getDefaultConfig(mainTemplate, templatesPath) {
     handlebars.registerHelper('returnOr', (one, two) => one || two);
     handlebars.registerHelper('returnAnd', (one, two) => one && two);
     handlebars.registerHelper('firstEl', arr => arr[0]);
-    handlebars.registerHelper('firstElNotNull', arr => arr[0] !== 'null');
+    handlebars.registerHelper('firstElNotNull', arr => arr && arr[0] !== 'null');
     handlebars.registerHelper('isEq', (one, two) => one == two);
     handlebars.registerHelper('isNotEq', (one, two) => one != two);
     handlebars.registerHelper('isString', one => typeof one === 'string');
@@ -187,6 +187,7 @@ function getDefaultConfig(mainTemplate, templatesPath) {
 
                     // properties of parent type
                     if (typ.type) {
+                        //console.log('par:', typ);
                         let extend = processType(typ.type);
 
                         if (extend.hasOwnProperty('properties')) {
@@ -209,6 +210,7 @@ function getDefaultConfig(mainTemplate, templatesPath) {
                             let key = props[i],
                                 prop = typ.properties[key];
 
+                            //console.log('key:', key);
                             typ.properties[key] = processType(prop);
                         }
                     }
@@ -225,6 +227,7 @@ function getDefaultConfig(mainTemplate, templatesPath) {
                         let key = props[i],
                             prop = type.properties[key];
 
+                        //console.log('in key:', key);
                         typ.properties[key] = processType(prop);
                     }
                 }
@@ -232,6 +235,10 @@ function getDefaultConfig(mainTemplate, templatesPath) {
                 return typ;
             };
             handlebars.registerHelper('getType', type => processType(type));
+            //handlebars.registerHelper('getType', function(type) {
+                //console.log('getType:', this, type);
+                //return processType(type);
+            //});
             let processResourceTypePattern = (rtPart, pattern) => {
                 if (typeof rtPart !== 'object') {
                     return rtPart;
@@ -305,6 +312,10 @@ function getDefaultConfig(mainTemplate, templatesPath) {
 
                     for (let i = 0; i < keys.length; i++) {
                         let key = keys[i];
+
+                        if (AVAILABLE_METHODS.indexOf(key) === -1) {
+                            continue;
+                        }
 
                         if (!methods[key].securedBy) {
                             methods[key].securedBy = ramlObj.securedBy;
