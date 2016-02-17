@@ -299,8 +299,12 @@ function getDefaultConfig(mainTemplate, templatesPath) {
                         for (let j = 0; j < rtMethods.length; j++) {
                             let rtMethodKey = rtMethods[j];
 
-                            if (!methods[rtMethodKey]) {
+                            if (typeof methods[rtMethodKey] === 'string' && methods[rtMethodKey].length === 0) {
+                                delete methods[rtMethodKey];
+                            } else if (!methods[rtMethodKey]) {
                                 methods[rtMethodKey] = processResourceTypePattern(resourceType[rtMethodKey], resource.type[resourceTypeKey]);
+                            } else {
+                                methods[rtMethodKey] = deepMerge(methods[rtMethodKey], processResourceTypePattern(resourceType[rtMethodKey], resource.type[resourceTypeKey]));
                             }
                         }
                     }
